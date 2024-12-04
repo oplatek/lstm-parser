@@ -8,6 +8,7 @@ TRAIN_ORACLE=$(MODELS_DIR)/trainingOracle.txt
 DEV_ORACLE=$(MODELS_DIR)/devOracle.txt 
 
 
+all: $(TEST_PARSED_CONLL)
 
 $(MODELS_DIR):
 	mkdir -p $@
@@ -32,12 +33,14 @@ $(TEST_ORACLE): $(TEST_CONLL)
 # the pretrained embeddings are for english only
 
 latest_model: $(TRAIN_ORACLE) $(DEV_ORACLE)
-	build/parser/lstm-parse -T $(TRAIN_ORACLE) -d $(DEV_ORACLE) --hidden_dim 100 --lstm_input_dim 100 --pretrained_dim 100 --rel_dim 20 --action_dim 20 -t -P
+	@echo "removing -P option so no POS"
+	build/parser/lstm-parse -T $(TRAIN_ORACLE) -d $(DEV_ORACLE) --hidden_dim 100 --lstm_input_dim 100 --pretrained_dim 100 --rel_dim 20 --action_dim 20 -t
 	echo; echo 'some model trained with the lstm parsing'; echo
 
 $(TEST_PARSED_CONLL): $(TRAIN_ORACLE) $(DEV_ORACLE)
-	build/parser/lstm-parse -T $(TRAIN_ORACLE) -d $(DEV_ORACLE) --hidden_dim 100 --lstm_input_dim 100 --pretrained_dim 100 --rel_dim 20 --action_dim 20 -P -m latest_model > $@
+	@echo "removing -P option so no POS"
+	build/parser/lstm-parse -T $(TRAIN_ORACLE) -d $(DEV_ORACLE) --hidden_dim 100 --lstm_input_dim 100 --pretrained_dim 100 --rel_dim 20 --action_dim 20 -m latest_model > $@
 	echo; echo 'Decoded $@'; echo
 
 clean: 
-	rm -f $(TRAIN_ORACLE) $(DEV_ORACLE)
+	rm -f $(TRAIN_ORACLE) $(DEV_ORACLE) $(TEST_PARSED_CONLL)
